@@ -1,4 +1,9 @@
 .world-map {
     width: 100%;
     height: 100%;
+
+    .world-map__layer-selector {
+        z-index: 1;
+        position: absolute;
+    }
 }

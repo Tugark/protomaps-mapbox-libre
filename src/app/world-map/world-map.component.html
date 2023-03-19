@@ -1,1 +1,16 @@
-<div id="map" class="world-map"></div>
+<div class="world-map" #map>
+  <mat-form-field appearance="fill" class="world-map__layer-selector">
+    <mat-label>Basemap Style</mat-label>
+    <mat-select
+      [(value)]="currentBaseMapStyle"
+      (selectionChange)="this.switchBaseMapStyle()"
+    >
+      <mat-option
+        *ngFor="let baseMapStyle of this.baseMapStyles | keyvalue"
+        [value]="baseMapStyle.value"
+      >
+        {{ baseMapStyle.value }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
