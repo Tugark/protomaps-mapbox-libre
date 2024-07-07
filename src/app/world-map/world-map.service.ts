@@ -1,25 +1,9 @@
-import { Injectable } from '@angular/core';
-import maplibregl, {
-  Map as MapLibreGlMap,
-  StyleSpecification,
-} from 'maplibre-gl';
-import * as pmtiles from 'pmtiles';
-import layers from 'protomaps-themes-base';
-
-export enum ProtomapsBaseMapStyle {
-  LIGHT = 'light',
-  DARK = 'dark',
-  BLACK = 'black',
-  DEBUG = 'debug',
-  GRAYSCALE = 'grayscale',
-  WHITE = 'white',
-}
-
-const DEFAULT_BASE_MAP_STYLE: ProtomapsBaseMapStyle =
-  ProtomapsBaseMapStyle.LIGHT;
+import { Injectable } from "@angular/core";
+import maplibregl, { Map as MapLibreGlMap } from "maplibre-gl";
+import * as pmtiles from "pmtiles";
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root"
 })
 export class WorldMapService {
   private map: MapLibreGlMap | undefined;
@@ -28,22 +12,52 @@ export class WorldMapService {
     this.setupPmTiles();
   }
 
-  public getDefaultBaseMapStyle(): ProtomapsBaseMapStyle {
-    return DEFAULT_BASE_MAP_STYLE;
-  }
 
   public initializeMap(container: HTMLElement) {
     this.map = new MapLibreGlMap({
       container: container,
       hash: true,
-      style: this.getProtomapStyle(),
-      center: [8.54027, 47.37785],
+      center: [21.056, 40.2376],
       zoom: 11,
-    });
-  }
+      maxZoom: 13,
+      style: {
+        version: 8,
+        glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+        sources: {
 
-  public switchBaseMapStyle(style: ProtomapsBaseMapStyle) {
-    this.map?.setStyle(this.getProtomapStyle(style));
+          contourPm: {
+            "type": "vector",
+            "url": "pmtiles://http://localhost:3000/ogr_frompg_reduced.pmtiles",
+          },
+                    osm: {
+            type: "raster",
+            tiles: ["https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: "&copy; OpenStreetMap Contributors",
+            maxzoom: 19
+          },
+        },
+        layers: [
+
+          {
+            id: "osm",
+            type: "raster",
+            source: "osm"
+          },
+          {
+            id: "contour",
+            type: "line",
+            source: "contourPm",
+            'source-layer': 'merged_raster',
+            paint: {
+                'line-color': '#ff69b4',
+                'line-width': 4
+            }
+          },
+
+        ]
+      }
+    });
   }
 
   /**
@@ -51,29 +65,6 @@ export class WorldMapService {
    */
   private setupPmTiles(): void {
     const protocol = new pmtiles.Protocol();
-    maplibregl.addProtocol('pmtiles', protocol.tile);
-  }
-
-  /**
-   * Returns the style specification for a given protomap style.
-   * @param layerStyle
-   * @returns
-   */
-  private getProtomapStyle(
-    layerStyle: ProtomapsBaseMapStyle = ProtomapsBaseMapStyle.LIGHT
-  ): StyleSpecification {
-    return {
-      version: 8,
-      glyphs: 'https://cdn.protomaps.com/fonts/pbf/{fontstack}/{range}.pbf',
-      sources: {
-        protomaps: {
-          type: 'vector',
-          url: 'pmtiles:///assets/maps/data.pmtiles',
-          attribution:
-            '<a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>',
-        },
-      },
-      layers: layers('protomaps', layerStyle),
-    };
+    maplibregl.addProtocol("pmtiles", protocol.tile);
   }
 }
